@@ -1,4 +1,5 @@
 #include <netinet/in.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,13 +59,37 @@ int main() {
     buffer[bytes_read] = '\0';
     printf("Recieved request:\n%s\n", buffer);
 
-    const char *response = "HTTP/1.1 200 OK\r\n"
-                           "Content-Type: text/html\r\n"
-                           "Content-Length: 13\r\n"
-                           "\r\n"
-                           "Hello, world!";
+    // const char *response = "HTTP/1.1 200 OK\r\n"
+    //                        "Content-Type: text/html\r\n"
+    //                        "Content-Length: 13\r\n"
+    //                        "\r\n"
+    //                        "Hello, world!";
+    //
 
-    write(client_fd, response, strlen(response));
+    FILE *file = fopen("index.html", "r");
+    if (file == NULL) {
+      perror("File not found!");
+      close(client_fd);
+      return 1;
+    }
+
+    // Read file content into buffer
+    char file_content[8192]; // assuming HTML fits in this size
+    size_t bytes = fread(file_content, 1, sizeof(file_content), file);
+    fclose(file);
+
+    // Build full HTTP response
+    char header[256];
+    sprintf(header,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: %zu\r\n"
+            "\r\n",
+            bytes);
+    // Send headers first
+    write(client_fd, header, strlen(header));
+    // Send the body (HTML content)
+    write(client_fd, file_content, bytes);
   }
 
   // close the client connection
