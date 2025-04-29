@@ -57,6 +57,14 @@ int main() {
   if (bytes_read > 0) {
     buffer[bytes_read] = '\0';
     printf("Recieved request:\n%s\n", buffer);
+
+    const char *response = "HTTP/1.1 200 OK\r\n"
+                           "Content-Type: text/html\r\n"
+                           "Content-Length: 13\r\n"
+                           "\r\n"
+                           "Hello, world!";
+
+    write(client_fd, response, strlen(response));
   }
 
   // close the client connection
