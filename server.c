@@ -10,6 +10,9 @@
 int main() {
   int server_fd;
   struct sockaddr_in address;
+  int addrlen = sizeof(address);
+  int client_fd;
+  char buffer[4096] = {0};
 
   // socket file descriptor initialization
   // representing the server's listening socket
@@ -38,6 +41,26 @@ int main() {
   }
 
   printf("Server is listening on PORT: %d...\n", PORT);
+
+  // Accept a connection
+  client_fd =
+      accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+  if (client_fd < 0) {
+    perror("accept failed");
+    exit(EXIT_FAILURE);
+  }
+
+  printf("Client connected!\n");
+
+  // Read the request into the buffer
+  int bytes_read = read(client_fd, buffer, sizeof(buffer) - 1);
+  if (bytes_read > 0) {
+    buffer[bytes_read] = '\0';
+    printf("Recieved request:\n%s\n", buffer);
+  }
+
+  // close the client connection
+  close(client_fd);
 
   return 0;
 }
